@@ -6,10 +6,8 @@ import blobfile as bf
 import numpy as np
 import torch as th
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
+from torchvision import transforms, datasets
 from .train_util import visualize
-from visdom import Visdom
-viz = Visdom(port=8850)
 from scipy import ndimage
 
 
@@ -52,12 +50,22 @@ def load_data(
         # before an underscore.
 
         class_names =[path.split("/")[3] for path in all_files] #9 or 3
-        print('classnames', class_names)
+        # print('classnames', class_names)
 
 
         sorted_classes = {x: i for i, x in enumerate(sorted(set(class_names)))}
         classes = [sorted_classes[x] for x in class_names]
+        print(sorted_classes)
 
+
+    # data_transforms = transforms.Compose([
+    #         # Data augmentation is a good practice for the train set
+    #         # Here, we randomly crop the image to 224x224 and
+    #         # randomly flip it horizontally. 
+    #         transforms.RandomResizedCrop(224),
+    #         transforms.RandomHorizontalFlip(),
+    #         transforms.ToTensor(),
+    #     ])
     dataset = ImageDataset(
         image_size,
         data_dir,
@@ -65,8 +73,15 @@ def load_data(
         shard=0,
         num_shards=1,
         random_crop=random_crop,
-        random_flip=random_flip,
+        random_flip=random_flip
     )
+    
+    # dataset = datasets.ImageFolder(
+    #         data_dir, 
+    #         transform=data_transforms
+    #     )
+    
+
     if deterministic:
         loader = DataLoader(
             dataset, batch_size=batch_size, shuffle=False, num_workers=1, drop_last=True

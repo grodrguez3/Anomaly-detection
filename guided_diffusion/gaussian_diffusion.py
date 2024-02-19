@@ -11,8 +11,6 @@ import torch.nn.functional as F
 from torchvision.utils import save_image
 import torch
 import math
-from visdom import Visdom
-viz = Visdom(port=8850)
 import numpy as np
 import torch as th
 from .train_util import visualize
@@ -21,6 +19,8 @@ from .losses import normal_kl, discretized_gaussian_log_likelihood
 from scipy import ndimage
 from torchvision import transforms
 import matplotlib.pyplot as plt
+import wandb
+
 def standardize(img):
     mean = th.mean(img)
     std = th.std(img)
@@ -687,11 +687,11 @@ class GaussianDiffusion:
 
                     if i%100==0:
                      print('i', i)
-                     viz.image(visualize(img[0,0,...]), opts=dict(caption=str(i)))
-                     viz.image(visualize(img[0, 1,...]), opts=dict(caption=str(i)))
-                     viz.image(visualize(img[0, 2,...]), opts=dict(caption=str(i)))
-                     viz.image(visualize(img[0, 3,...]), opts=dict(caption=str(i)))
-                     viz.image(visualize(out["saliency"][0,0,...]), opts=dict(caption='saliency'))
+                     wandb.Image(visualize(img[0,0,...]), caption=str(i))
+                     wandb.Image(visualize(img[0, 1,...]), caption=str(i))
+                     wandb.Image(visualize(img[0, 2,...]), caption=str(i))
+                     wandb.Image(visualize(img[0, 3,...]), caption=str(i))
+                     wandb.Image(visualize(out["saliency"][0,0,...]), caption='saliency')
               
 
     def ddim_sample(
@@ -866,7 +866,7 @@ class GaussianDiffusion:
         ):
 
             final = sample
-        viz.image(visualize(final["sample"].cpu()[0, ...]), opts=dict(caption="sample"+ str(10) ))
+        wandb.Image(visualize(final["sample"].cpu()[0, ...]),caption="sample"+ str(10) )
         return final["sample"]
 
 
@@ -918,10 +918,10 @@ class GaussianDiffusion:
             eta=eta,
         ):
             final = sample
-        viz.image(visualize(final["sample"].cpu()[0,0, ...]), opts=dict(caption="final 0" ))
-        viz.image(visualize(final["sample"].cpu()[0,1, ...]), opts=dict(caption="final 1" ))
-        viz.image(visualize(final["sample"].cpu()[0,2, ...]), opts=dict(caption="final 2" ))
-        viz.image(visualize(final["sample"].cpu()[0,3, ...]), opts=dict(caption="final 3" ))
+        wandb.Image(visualize(final["sample"].cpu()[0,0, ...]), caption="final 0" )
+        wandb.Image(visualize(final["sample"].cpu()[0,1, ...]), caption="final 1" )
+        wandb.Image(visualize(final["sample"].cpu()[0,2, ...]), caption="final 2" )
+        wandb.Image(visualize(final["sample"].cpu()[0,3, ...]), caption="final 3" )
 
 
         return final["sample"], x_noisy, img
@@ -985,7 +985,7 @@ class GaussianDiffusion:
                 yield out
                 img = out["sample"]
 
-        viz.image(visualize(img.cpu()[0,0, ...]), opts=dict(caption="reversesample"))
+        wandb.Image(visualize(img.cpu()[0,0, ...]),caption="reversesample")
         for i in indices:
                 t = th.tensor([i] * shape[0], device=device)
                 with th.no_grad():
@@ -1165,7 +1165,7 @@ class GaussianDiffusion:
             t_batch = th.tensor([t] * batch_size, device=device)
             noise = th.randn_like(x_start)
             x_t = self.q_sample(x_start=x_start, t=t_batch, noise=noise)
-            viz.image(visualize(x_t[0, ...]), opts=dict(caption="xt"))
+            wandb.Image(visualize(x_t[0, ...]), caption="xt")
 
             # Calculate VLB term at the current timestep
             with th.no_grad():

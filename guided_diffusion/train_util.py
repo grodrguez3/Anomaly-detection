@@ -12,8 +12,6 @@ from . import dist_util, logger
 from .fp16_util import MixedPrecisionTrainer
 from .nn import update_ema
 from .resample import LossAwareSampler, UniformSampler
-from visdom import Visdom
-viz = Visdom(port=8850)
 
 
 INITIAL_LOG_LOSS_SCALE = 20.0
@@ -166,9 +164,11 @@ class TrainLoop:
             not self.lr_anneal_steps
             or self.step + self.resume_step < self.lr_anneal_steps
         ):
-            if self.dataset=='brats':
+            if self.dataset in ['brats','oct']:
                 try:
+                    print(self.iterdatal)
                     batch, cond, label = next(self.iterdatal)
+                    print(batch,cond,label)
                 except:
                     self.iterdatal = iter(self.datal)
                     batch, cond, label, _, _ = next(self.iterdatal)

@@ -17,8 +17,6 @@ from guided_diffusion.script_util import (
     add_dict_to_argparser,
 )
 from guided_diffusion.train_util import TrainLoop
-from visdom import Visdom
-viz = Visdom(port=8850)
 
 def main():
     args = create_argparser().parse_args()
@@ -53,7 +51,7 @@ def main():
         )
         print('dataset is chexpert')
 
-    elif args.dataset == 'otc':
+    elif args.dataset == 'oct':
         datal = load_data(
             data_dir=args.data_dir,
             batch_size=1,
